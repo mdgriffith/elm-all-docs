@@ -83,7 +83,6 @@ function getCache(): Cache {
 
       const version = pieces[1];
       const packageName = pieces[0].replace(/\./, "/");
-      console.log(file);
       if (packageName in retrieved) {
         retrieved[packageName].push(version);
       } else {
