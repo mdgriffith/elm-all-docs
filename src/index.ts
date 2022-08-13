@@ -105,12 +105,18 @@ async function get() {
   const packages = await listPackages();
   const cache = getCache();
 
+  const packageCount = packages.length;
+  let index = 0;
+
   for (let pkg of packages) {
+    index = index + 1;
     if (
       pkg.name in cache.retrieved &&
       cache.retrieved[pkg.name].includes(pkg.version)
     ) {
-      console.log(`${pkg.name} - ${pkg.version} - already cached`);
+      console.log(
+        `${index}/${packageCount} ${pkg.name} - ${pkg.version} - already cached`
+      );
       continue;
     } else {
       try {
@@ -120,7 +126,9 @@ async function get() {
         );
 
         fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
-        console.log(`${pkg.name} - ${pkg.version} - retrieved, pausing`);
+        console.log(
+          `${index}/${packageCount} ${pkg.name} - ${pkg.version} - retrieved, pausing`
+        );
         await sleep(300);
       } catch (e) {
         console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
