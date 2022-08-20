@@ -95,7 +95,28 @@ function getCache(): Cache {
 
   return { retrieved: retrieved };
 }
+function docsFilename (name: string, version: string ): string {
+  return path.join(
+    `${dir}/${name.replace(/\//g, ".")}:${version}.json`
+  );
+}
 
+function clearOldRevisions(pkg: Package, revisions: [string]){
+  if(revisions === undefined){
+    return;
+  }
+  else {
+    for(let revision of revisions){
+      try {
+          let oldFilename = docsFilename(pkg.name, revision);
+          console.log(`Removing old docs version - ${oldFilename}`);
+          fs.unlinkSync(oldFilename);
+      } catch (e) {
+        console.log(`Problem removing ${pkg.name}-${revision}: ${e}`);
+      }
+    }
+  }
+}
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -121,14 +142,14 @@ async function get() {
     } else {
       try {
         const docs = await getPackage(pkg);
-        const filename = path.join(
-          `${dir}/${pkg.name.replace(/\//g, ".")}:${pkg.version}.json`
-        );
+        const filename = docsFilename(pkg.name, pkg.version);
 
         fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
         console.log(
           `${index}/${packageCount} ${pkg.name} - ${pkg.version} - retrieved, pausing`
         );
+
+        clearOldRevisions(pkg, cache.retrieved[pkg.name]);
         await sleep(300);
       } catch (e) {
         console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
