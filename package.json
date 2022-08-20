@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "repository": "https://github.com/mdgriffith/elm-all-docs.git",
   "author": "Matthew Griffith <mdg.griffith@gmail.com>",
-  "license": "BSD v3",
+  "license": "BSD-3-Clause-Clear",
   "scripts": {
     "build": "tsc",
     "get": "node ./dist/index.js"
