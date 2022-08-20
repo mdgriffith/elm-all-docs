@@ -78,6 +78,10 @@ function getCache(): Cache {
   if (fs.existsSync(dir)) {
     console.log("Reading cache");
     fs.readdirSync(dir).forEach((file) => {
+      if(!file.endsWith(".json")){
+        return;
+      }
+
       const fileWithoutExtension = file.replace(/\.json$/, "");
       let pieces = fileWithoutExtension.split(":");
 
@@ -95,6 +99,62 @@ function getCache(): Cache {
 
   return { retrieved: retrieved };
 }
+
+function getReadmeCache(): Cache {
+  let retrieved: { [key: string]: [string] } = {};
+
+  if (fs.existsSync(dir)) {
+    console.log("Reading README cache");
+    fs.readdirSync(dir).forEach((file) => {
+      if(!file.endsWith(".readme.md")){
+        return;
+      }
+
+      const fileWithoutExtension = file.replace(/\.readme.md/, "");
+      let pieces = fileWithoutExtension.split(":");
+
+      const version = pieces[1];
+      const packageName = pieces[0].replace(/\./, "/");
+      if (packageName in retrieved) {
+        retrieved[packageName].push(version);
+      } else {
+        retrieved[packageName] = [version];
+      }
+    });
+  } else {
+    fs.mkdirSync(dir);
+  }
+
+  return { retrieved: retrieved };
+}
+async function getReadme(pkg: Package): Promise<string | null> {
+  let readmeResponse = await fetch(
+    `https://raw.githubusercontent.com/${pkg.name}/${pkg.version}/README.md`
+  );
+
+  if(readmeResponse.ok){
+    return await readmeResponse.text();
+  }
+  // try the lowercase readme file (I see you JohnBugner/elm-loop and similar)
+  else {
+    readmeResponse = await fetch(
+      `https://raw.githubusercontent.com/${pkg.name}/${pkg.version}/readme.md`
+    );
+    if(readmeResponse.ok){
+      return await readmeResponse.text();
+    }
+    else {
+      return null;
+    }
+  }
+}
+
+function readmeFilename (name: string, version: string ): string {
+  return path.join(
+    `${dir}/${name.replace(/\//g, ".")}:${version}.readme.md`
+  );
+}
+
 function docsFilename (name: string, version: string ): string {
   return path.join(
     `${dir}/${name.replace(/\//g, ".")}:${version}.json`
@@ -120,54 +180,117 @@ function clearOldRevisions(pkg: Package, revisions: [string], dryRun: boolean){
     }
   }
 }
+
+function clearOldReadmes(pkg: Package, revisions: [string], dryRun: boolean){
+  if(revisions === undefined){
+    return;
+  }
+  else {
+    for(let revision of revisions){
+      try {
+        let oldFilename = readmeFilename(pkg.name, revision);
+        console.log(`Removing old README version - ${oldFilename}`);
+
+        if(!dryRun){
+          fs.unlinkSync(oldFilename);
+        }
+      } catch (e) {
+        console.log(`Problem removing README for ${pkg.name}-${revision}: ${e}`);
+      }
+    }
+  }
+}
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function tryToGetPackage (pkg: Package, cache: Cache, progress: string, dryRun: boolean){
-  try {
-    const docs = await getPackage(pkg);
-    const filename = docsFilename(pkg.name, pkg.version);
-
-    if(!dryRun){
-      fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
+async function tryToGetPackage (pkg: Package, cache: Cache, progress: string, options: Options){
+  if (
+    pkg.name in cache.retrieved &&
+    cache.retrieved[pkg.name].includes(pkg.version)
+  ) {
+    
+    if(options.verbose){
+      console.log(
+        `${progress} ${pkg.name} - ${pkg.version} - already cached`
+      );
     }
 
-    console.log(
-      `${progress} ${pkg.name} - ${pkg.version} - retrieved, pausing`
-    );
+    return;
+  } else {
+    try {
+      const docs = await getPackage(pkg);
+      const filename = docsFilename(pkg.name, pkg.version);
 
-    clearOldRevisions(pkg, cache.retrieved[pkg.name], dryRun);
-    await sleep(300);
-  } catch (e) {
-    console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
+      if(!options.dryRun){
+        fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
+      }
+
+      console.log(
+        `${progress} ${pkg.name} - ${pkg.version} - retrieved, pausing`
+      );
+
+      clearOldRevisions(pkg, cache.retrieved[pkg.name], options.dryRun);
+      await sleep(300);
+    } catch (e) {
+      console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
+    }
+  }
+}
+
+async function tryToGetReadme (pkg: Package, cache: Cache, progress: string, options: Options){
+  if (
+    pkg.name in cache.retrieved &&
+    cache.retrieved[pkg.name].includes(pkg.version)
+  ) {
+    
+    if(options.verbose){
+      console.log(
+        `${progress} ${pkg.name} - ${pkg.version} - README already cached`
+      );
+    }
+
+    return;
+  } else {
+    try {
+      const readme = await getReadme(pkg);
+      if(readme === null){
+        console.log(
+        `    [x] Unable to get README for ${pkg.name} - ${pkg.version} - skipping this file`
+        );
+        return;
+      }
+      const filename = readmeFilename(pkg.name, pkg.version);
+
+      if(!options.dryRun){
+        fs.writeFileSync(filename, readme);
+      }
+
+      console.log(
+        `${progress} ${pkg.name} - ${pkg.version} - readme retrieved, pausing`
+      );
+
+      clearOldReadmes(pkg, cache.retrieved[pkg.name], options.dryRun);
+      await sleep(300);
+    } catch (e) {
+      console.log(`Problem retrieving README ${pkg.name}-${pkg.version}: ${e}`);
+    }
   }
 }
 
 async function get(options: Options) {
   const packages = await listPackages();
   const cache = getCache();
+  const readmeCache = getReadmeCache();
 
   const packagesCount = packages.length;
   let index = 0;
 
   for (let pkg of packages) {
     index = index + 1;
-    if (
-      pkg.name in cache.retrieved &&
-      cache.retrieved[pkg.name].includes(pkg.version)
-    ) {
-      
-      if(options.verbose){
-        console.log(
-          `${index}/${packagesCount} ${pkg.name} - ${pkg.version} - already cached`
-        );
-      }
-
-      continue;
-    } else {
-      await tryToGetPackage(pkg, cache, `${index}/${packagesCount}`, options.dryRun);
-    }
+    await tryToGetPackage(pkg, cache, `${index}/${packagesCount}`, options);
+    await tryToGetReadme(pkg, readmeCache, `${index}/${packagesCount}`, options);
   }
 }
 
