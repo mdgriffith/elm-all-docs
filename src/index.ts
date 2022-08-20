@@ -109,7 +109,7 @@ function clearOldRevisions(pkg: Package, revisions: [string]){
     for(let revision of revisions){
       try {
           let oldFilename = docsFilename(pkg.name, revision);
-          console.log("Removing old", oldFilename);
+          console.log(`Removing old docs version - ${oldFilename}`);
           fs.unlinkSync(oldFilename);
       } catch (e) {
         console.log(`Problem removing ${pkg.name}-${revision}: ${e}`);
