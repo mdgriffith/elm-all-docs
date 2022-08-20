@@ -101,16 +101,19 @@ function docsFilename (name: string, version: string ): string {
   );
 }
 
-function clearOldRevisions(pkg: Package, revisions: [string]){
+function clearOldRevisions(pkg: Package, revisions: [string], dryRun: boolean){
   if(revisions === undefined){
     return;
   }
   else {
     for(let revision of revisions){
       try {
-          let oldFilename = docsFilename(pkg.name, revision);
-          console.log(`Removing old docs version - ${oldFilename}`);
+        let oldFilename = docsFilename(pkg.name, revision);
+        console.log(`Removing old docs version - ${oldFilename}`);
+
+        if(!dryRun){
           fs.unlinkSync(oldFilename);
+        }
       } catch (e) {
         console.log(`Problem removing ${pkg.name}-${revision}: ${e}`);
       }
@@ -121,12 +124,31 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function get() {
-  //   console.log("pls");
+async function tryToGetPackage (pkg: Package, cache: Cache, progress: string, dryRun: boolean){
+  try {
+    const docs = await getPackage(pkg);
+    const filename = docsFilename(pkg.name, pkg.version);
+
+    if(!dryRun){
+      fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
+    }
+
+    console.log(
+      `${progress} ${pkg.name} - ${pkg.version} - retrieved, pausing`
+    );
+
+    clearOldRevisions(pkg, cache.retrieved[pkg.name], dryRun);
+    await sleep(300);
+  } catch (e) {
+    console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
+  }
+}
+
+async function get(options: Options) {
   const packages = await listPackages();
   const cache = getCache();
 
-  const packageCount = packages.length;
+  const packagesCount = packages.length;
   let index = 0;
 
   for (let pkg of packages) {
@@ -135,27 +157,23 @@ async function get() {
       pkg.name in cache.retrieved &&
       cache.retrieved[pkg.name].includes(pkg.version)
     ) {
-      console.log(
-        `${index}/${packageCount} ${pkg.name} - ${pkg.version} - already cached`
-      );
+      
+      if(options.verbose){
+        console.log(
+          `${index}/${packagesCount} ${pkg.name} - ${pkg.version} - already cached`
+        );
+      }
+
       continue;
     } else {
-      try {
-        const docs = await getPackage(pkg);
-        const filename = docsFilename(pkg.name, pkg.version);
-
-        fs.writeFileSync(filename, JSON.stringify(docs, null, 4));
-        console.log(
-          `${index}/${packageCount} ${pkg.name} - ${pkg.version} - retrieved, pausing`
-        );
-
-        clearOldRevisions(pkg, cache.retrieved[pkg.name]);
-        await sleep(300);
-      } catch (e) {
-        console.log(`Problem retrieving ${pkg.name}-${pkg.version}: ${e}`);
-      }
+      await tryToGetPackage(pkg, cache, `${index}/${packagesCount}`, options.dryRun);
     }
   }
+}
+
+type Options = {
+  dryRun : boolean
+  verbose : boolean
 }
 
 program
@@ -164,6 +182,8 @@ program
     `Retrieve all the docs.json files from the Elm package website.
 `
   )
+  .option('--dry-run', 'Don\'t do any changes to file system', false)
+  .option('-v, --verbose', 'Show detailed logs', false)
   .action(get);
 
 program.showHelpAfterError();
