@@ -1,0 +1,375 @@
+{
+    "Skinney/elm-deque": {
+        "reason": "moved",
+        "newName": "robinheghan/elm-deque"
+    },
+    "Skinney/elm-phone-numbers": {
+        "reason": "moved",
+        "newName": "robinheghan/elm-phone-numbers"
+    },
+    "Skinney/elm-warrior": {
+        "reason": "moved",
+        "newName": "robinheghan/elm-warrior"
+    },
+    "Skinney/keyboard-events": {
+        "reason": "moved",
+        "newName": "robinheghan/keyboard-events"
+    },
+    "Skinney/murmur3": {
+        "reason": "moved",
+        "newName": "robinheghan/murmur3"
+    },
+    "ianmackenzie/elm-step-file": {
+        "reason": "moved",
+        "newName": "ianmackenzie/elm-iso-10303"
+    },
+    "2426021684/elm-collage": {
+        "reason": "moved",
+        "newName": "michaelmesser/elm-collage"
+    },
+    "2426021684/elm-text-width": {
+        "reason": "moved",
+        "newName": "michaelmesser/elm-text-width"
+    },
+    "ContaSystemer/review-no-missing-documentation": {
+        "reason": "moved",
+        "newName": "ContaSystemer/elm-review-no-missing-documentation"
+    },
+    "ContaSystemer/review-noregex": {
+        "reason": "moved",
+        "newName": "ContaSystemer/elm-review-no-regex"
+    },
+    "HAN-ASD-DT/priority-queue": {
+        "reason": "not found"
+    },
+    "HAN-ASD-DT/rsa": {
+        "reason": "not found"
+    },
+    "JeremyBellows/elm-bootstrapify": {
+        "reason": "moved",
+        "newName": "vbop9834/elm-bootstrapify"
+    },
+    "Morgan-Stanley/morphir-elm": {
+        "reason": "moved",
+        "newName": "finos/morphir-elm"
+    },
+    "abradley2/form-controls": {
+        "reason": "not found"
+    },
+    "abradley2/form-fields": {
+        "reason": "not found"
+    },
+    "adius/vectual": {
+        "reason": "moved",
+        "newName": "ad-si/vectual"
+    },
+    "afidegnum/elm-tailwind": {
+        "reason": "not found"
+    },
+    "allo-media/elm-daterange-picker": {
+        "reason": "moved",
+        "newName": "n1k0/elm-daterange-picker"
+    },
+    "altayaydemir/style-elements": {
+        "reason": "moved",
+        "newName": "altaywtf/style-elements"
+    },
+    "altjsus/elm-airtable": {
+        "reason": "not found"
+    },
+    "altjsus/elmtable": {
+        "reason": "moved",
+        "newName": "shegeley/elmtable"
+    },
+    "anatol-1988/measurement": {
+        "reason": "moved",
+        "newName": "rielas/measurement"
+    },
+    "brainrape/elm-arc-diagram": {
+        "reason": "moved",
+        "newName": "brainrake/elm-arc-diagram"
+    },
+    "brainrape/elm-ganja": {
+        "reason": "moved",
+        "newName": "brainrake/elm-ganja"
+    },
+    "brainrape/elm-mathml": {
+        "reason": "moved",
+        "newName": "brainrake/elm-mathml"
+    },
+    "burnable-tech/elm-ethereum": {
+        "reason": "moved",
+        "newName": "team-toast/elm-ethereum"
+    },
+    "calions-app/app-object": {
+        "reason": "moved",
+        "newName": "FabienHenon/app-object"
+    },
+    "calions-app/elm-placeholder-loading": {
+        "reason": "moved",
+        "newName": "FabienHenon/elm-placeholder-loading"
+    },
+    "calions-app/env": {
+        "reason": "moved",
+        "newName": "FabienHenon/env"
+    },
+    "calions-app/jsonapi-http": {
+        "reason": "moved",
+        "newName": "FabienHenon/jsonapi-http"
+    },
+    "calions-app/jsonapi-http-retry": {
+        "reason": "moved",
+        "newName": "FabienHenon/jsonapi-http-retry"
+    },
+    "calions-app/remote-resource": {
+        "reason": "moved",
+        "newName": "FabienHenon/remote-resource"
+    },
+    "calions-app/test-attribute": {
+        "reason": "moved",
+        "newName": "FabienHenon/test-attribute"
+    },
+    "carpe/elm-data": {
+        "reason": "not found"
+    },
+    "ceddlyburge/elm-bootstrap-starter-master-view": {
+        "reason": "moved",
+        "newName": "ceddlyburge/bootstrap-starter-master-view"
+    },
+    "chemirea/bulma-classes": {
+        "reason": "moved",
+        "newName": "shin-sakata/bulma-classes"
+    },
+    "choonkeat/create-elm-server": {
+        "reason": "moved",
+        "newName": "choonkeat/elm-webapp"
+    },
+    "choonkeat/elm-fullstack": {
+        "reason": "moved",
+        "newName": "choonkeat/elm-webapp"
+    },
+    "danhandrea/elm-foo": {
+        "reason": "not found"
+    },
+    "davidcavazos/parser": {
+        "reason": "moved",
+        "newName": "lambda-phi/parser"
+    },
+    "doanythingfordethklok/snackbar": {
+        "reason": "moved",
+        "newName": "panthershark/snackbar-old"
+    },
+    "fission-suite/kit": {
+        "reason": "moved",
+        "newName": "fission-codes/kit"
+    },
+    "fission-suite/webnative-elm": {
+        "reason": "moved",
+        "newName": "fission-codes/webnative-elm"
+    },
+    "flowlang-cc/elm-audio-graph": {
+        "reason": "moved",
+        "newName": "flow-lang/elm-audio-graph"
+    },
+    "getto-systems/getto-elm-command": {
+        "reason": "moved",
+        "newName": "getto-systems/elm-command"
+    },
+    "gipsy-king/radar-chart": {
+        "reason": "moved",
+        "newName": "benjajaja/radar-chart"
+    },
+    "ivadzy/bbase64": {
+        "reason": "moved",
+        "newName": "chelovek0v/bbase64"
+    },
+    "jaredramirez/html-styled-extra": {
+        "reason": "not found"
+    },
+    "jasonliang512/elm-heroicons": {
+        "reason": "moved",
+        "newName": "jasonliang-dev/elm-heroicons"
+    },
+    "jwheeler-cp/elm-form": {
+        "reason": "not found"
+    },
+    "kingwither/elmeither": {
+        "reason": "moved",
+        "newName": "davidboers/ElmEither"
+    },
+    "laniakea-landscape/tailwindcss-typed": {
+        "reason": "moved",
+        "newName": "steakoverflow-me/tailwindcss-typed"
+    },
+    "lnkr-a/tailwindcss-typed": {
+        "reason": "moved",
+        "newName": "steakoverflow-me/tailwindcss-typed"
+    },
+    "m-mullins/elm-console": {
+        "reason": "not found"
+    },
+    "maca/crdt-replicated-graph": {
+        "reason": "moved",
+        "newName": "maca/crdt-replicated-tree"
+    },
+    "matken11235/html-styled-extra": {
+        "reason": "moved",
+        "newName": "ken-matsui/html-styled-extra"
+    },
+    "nathanjohnson320/elm-ui-components": {
+        "reason": "not found"
+    },
+    "nik-garmash/elm-test": {
+        "reason": "not found"
+    },
+    "not1602/elm-feather": {
+        "reason": "not found"
+    },
+    "opvasger/amr": {
+        "reason": "not found"
+    },
+    "ozyinc/elm-sortable-table-with-row-id": {
+        "reason": "not found"
+    },
+    "pascallemerrer/elm-advanced-grid": {
+        "reason": "moved",
+        "newName": "Orange-OpenSource/elm-advanced-grid"
+    },
+    "pd-andy/elm-audio-graph": {
+        "reason": "moved",
+        "newName": "hayleigh-dot-dev/elm-audio-graph"
+    },
+    "pd-andy/elm-limiter": {
+        "reason": "moved",
+        "newName": "hayleigh-dot-dev/elm-limiter"
+    },
+    "pd-andy/elm-web-audio": {
+        "reason": "moved",
+        "newName": "hayleigh-dot-dev/elm-web-audio"
+    },
+    "pd-andy/tuple-extra": {
+        "reason": "moved",
+        "newName": "hayleigh-dot-dev/tuple-extra"
+    },
+    "peterszerzo/elm-natural-ui": {
+        "reason": "not found"
+    },
+    "philipe-roberge/elm-grid": {
+        "reason": "moved",
+        "newName": "proberge-dev/elm-grid"
+    },
+    "proda-ai/elm-logger": {
+        "reason": "not found"
+    },
+    "reserve-protocol/elm-i3166-data": {
+        "reason": "moved",
+        "newName": "reserve-protocol/elm-iso3166-data"
+    },
+    "riskbook/number-to-words": {
+        "reason": "not found"
+    },
+    "romariolopezc/elm-hmac-sha1": {
+        "reason": "moved",
+        "newName": "rlopzc/elm-hmac-sha1"
+    },
+    "romariolopezc/elm-sentry": {
+        "reason": "moved",
+        "newName": "rlopzc/elm-sentry"
+    },
+    "samueldple/material-color": {
+        "reason": "moved",
+        "newName": "notquiteamonad/material-color"
+    },
+    "special-elektronik/elm-autocomplete": {
+        "reason": "moved",
+        "newName": "Specialelektronik/elm-autocomplete"
+    },
+    "terry-bit-io/elm-paginate": {
+        "reason": "not found"
+    },
+    "tricycle/elm-actor-framework": {
+        "reason": "moved",
+        "newName": "bellroy/elm-actor-framework"
+    },
+    "tricycle/elm-actor-framework-sandbox": {
+        "reason": "moved",
+        "newName": "bellroy/elm-actor-framework-sandbox"
+    },
+    "tricycle/elm-actor-framework-template": {
+        "reason": "moved",
+        "newName": "bellroy/elm-actor-framework-template"
+    },
+    "tricycle/elm-actor-framework-template-html": {
+        "reason": "moved",
+        "newName": "bellroy/elm-actor-framework-template-html"
+    },
+    "tricycle/elm-actor-framework-template-markdown": {
+        "reason": "moved",
+        "newName": "bellroy/elm-actor-framework-template-markdown"
+    },
+    "tricycle/elm-email": {
+        "reason": "moved",
+        "newName": "bellroy/elm-email"
+    },
+    "tricycle/elm-embed-youtube": {
+        "reason": "moved",
+        "newName": "bellroy/elm-embed-youtube"
+    },
+    "tricycle/elm-eventstream": {
+        "reason": "moved",
+        "newName": "bellroy/elm-eventstream"
+    },
+    "tricycle/elm-imgix": {
+        "reason": "moved",
+        "newName": "bellroy/elm-imgix"
+    },
+    "tricycle/elm-infinite-gallery": {
+        "reason": "moved",
+        "newName": "bellroy/elm-infinite-gallery"
+    },
+    "tricycle/elm-infnite-gallery": {
+        "reason": "moved",
+        "newName": "bellroy/elm-infinite-gallery"
+    },
+    "tricycle/elm-parse-dont-validate": {
+        "reason": "moved",
+        "newName": "bellroy/elm-parse-dont-validate"
+    },
+    "tricycle/elm-storage": {
+        "reason": "moved",
+        "newName": "bellroy/elm-storage"
+    },
+    "tricycle/morty-api": {
+        "reason": "not found"
+    },
+    "tricycle/system-actor-model": {
+        "reason": "moved",
+        "newName": "bellroy/system-actor-model"
+    },
+    "valentinomicko/test-forms": {
+        "reason": "moved",
+        "newName": "valentinomicudaj1/test-forms"
+    },
+    "vernacular-ai/elm-flow-chart": {
+        "reason": "moved",
+        "newName": "skit-ai/elm-flow-chart"
+    },
+    "vicramgon/logicus": {
+        "reason": "not found"
+    },
+    "waratuman/elm-json-extra": {
+        "reason": "moved",
+        "newName": "waratuman/json-extra"
+    },
+    "xilnocas/step": {
+        "reason": "moved",
+        "newName": "nicklawls/step"
+    },
+    "y0hy0h/ordered-containers": {
+        "reason": "moved",
+        "newName": "j-maas/ordered-containers"
+    },
+    "yujota/elm-makie": {
+        "reason": "not found"
+    }
+}
