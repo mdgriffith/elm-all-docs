@@ -1,7 +1,6 @@
 /**/
 
 import * as Commander from "commander";
-import chalk from "chalk";
 import * as fs from "fs";
 import fetch from "node-fetch";
 import * as path from "path";
@@ -41,7 +40,7 @@ program
     `Retrieve all the docs.json files from the Elm package website.
 `
   )
-  .option('--dry-run', 'Don\'t do any changes to file system', false)
+  .option('--dry-run', 'Don\'t write any changes to file system', false)
   .option('-v, --verbose', 'Show progress for cached packages as well', false)
   .action(get);
 
@@ -51,8 +50,18 @@ program
     `Check for integrity of packages and generate skipped.json
 `
   )
-  .option('--dry-run', 'Don\'t do any changes to file system', false)
+  .option('--dry-run', 'Don\'t write any changes to file system', false)
+  .option('--purge', 'Remove packages that are marked as skipped', false)
   .action(check);
+
+program
+  .command("purge-skipped")
+  .description(
+    `Removes all packages and readmes that are marked as skipped
+`
+  )
+  .option('--dry-run', 'Don\'t write any changes to file system', false)
+  .action(purgeSkipped);
 
 program.showHelpAfterError();
 program.parseAsync();
@@ -382,13 +391,16 @@ async function get(options: GetOptions) {
     await tryToGetPackage(pkg, cache, `${index}/${packagesCount}`, options);
     await tryToGetReadme(pkg, readmeCache, `${index}/${packagesCount}`, options);
   }
+
+  console.log ("Done!")
 }
 
 // ---------------------------------------------------
 // PACKAGES CHECK  
 // ---------------------------------------------------
 type CheckOptions = {
-  dryRun : boolean
+  dryRun : boolean,
+  purge : boolean
 }
 
 enum Reason { 
@@ -432,11 +444,43 @@ async function tryToCheckPackages(pkg: Package, progress: string, options: Check
   }
 }
 
+function purgeSkippedPackages(skipped: any, dryRun: boolean){
+
+  if (fs.existsSync(dir)) {
+    console.log("Reading docs dir");
+    fs.readdirSync(dir).forEach((file) => {
+      try{
+        const packagePart = file.split(":")[0]?.replace('.', '/');
+
+        if(skipped[packagePart] !== undefined){
+          const filePath = path.join(dir, file)
+          console.log('Removing ', filePath)
+
+          if(!dryRun){
+            fs.unlinkSync(filePath);
+          }
+        }
+      }
+      catch(e){
+        console.log('Error occured while trying to process', file, '\n',e)
+      }
+    });
+  }
+}
+
 async function check(options: CheckOptions) {
+  console.log(options);
+
   const packages = await listPackages();
   const packagesCount = packages.length;
   let skipped:any = {}
   let index = 0;
+
+  if (fs.existsSync('./skipped.json')) {
+    skipped = JSON.parse(fs.readFileSync('./skipped.json').toString());
+  } else {
+    skipped = {}
+  }
 
   for (let pkg of packages) {
     index = index + 1;
@@ -458,8 +502,30 @@ async function check(options: CheckOptions) {
   if(!options.dryRun){
     console.log('Writing results to skipped.json');
     fs.writeFileSync(skippedFilename, skippedJson);
+
+    if(options.purge){
+      purgeSkippedPackages(skipped, false);
+    }
   }
   else {
     console.log(skippedJson);
+  }
+
+  console.log ("Done!")
+}
+
+type PurgeOptions = {
+  dryRun : boolean,
+}
+async function purgeSkipped(options: PurgeOptions) {
+  let skipped:any = {}
+  console.log(options);
+
+  if (fs.existsSync('./skipped.json')) {
+    skipped = JSON.parse(fs.readFileSync('./skipped.json').toString());
+    purgeSkippedPackages(skipped, options.dryRun);
+  } 
+  else {
+    console.log ("No skipped.json file found. Done!")
   }
 }
