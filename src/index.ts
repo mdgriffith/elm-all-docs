@@ -210,7 +210,7 @@ async function tryToGetPackage (pkg: Package, cache: Cache, progress: string, op
       }
 
       console.log(
-        `${progress} ${pkg.name} - ${pkg.version} - retrieved, pausing`
+        `${progress} ${pkg.name} - ${pkg.version} - retrieved`
       );
 
       clearOldRevisions(pkg, cache.retrieved[pkg.name], options.dryRun);
@@ -258,26 +258,44 @@ function getReadmeCache(): Cache {
 
   return { retrieved: retrieved };
 }
-async function getReadme(pkg: Package): Promise<string | null> {
+
+async function getReadmeFile(pkg: Package, readmeFileName: string) {
   let readmeResponse = await fetch(
-    `https://raw.githubusercontent.com/${pkg.name}/${pkg.version}/README.md`
+   `https://raw.githubusercontent.com/${pkg.name}/${pkg.version}/${readmeFileName}`
   );
 
   if(readmeResponse.ok){
     return await readmeResponse.text();
+  } else {
+    return null
   }
-  // try the lowercase readme file (I see you JohnBugner/elm-loop and similar)
-  else {
-    readmeResponse = await fetch(
-      `https://raw.githubusercontent.com/${pkg.name}/${pkg.version}/readme.md`
-    );
-    if(readmeResponse.ok){
-      return await readmeResponse.text();
-    }
-    else {
-      return null;
-    }
-  }
+}
+
+async function getReadme(pkg: Package): Promise<string | null> {
+  let response = null;
+  //
+  // try 'README.md'
+  response = await getReadmeFile(pkg, 'README.md');
+
+  if (response !== null)
+    { return response }
+
+  // try 'readme.md'
+  response = await getReadmeFile(pkg, 'readme.md');
+
+  if (response !== null)
+    { return response }
+
+  // try 'Readme.md'
+  response = await getReadmeFile(pkg, 'Readme.md');
+
+  if (response !== null)
+    { return response }
+
+  // try 'README.MD'
+  response = await getReadmeFile(pkg, 'README.MD');
+
+  return response 
 }
 
 function clearOldReadmes(pkg: Package, revisions: [string], dryRun: boolean){
@@ -329,7 +347,7 @@ async function tryToGetReadme (pkg: Package, cache: Cache, progress: string, opt
       }
 
       console.log(
-        `${progress} ${pkg.name} - ${pkg.version} - readme retrieved, pausing`
+        `${progress} ${pkg.name} - ${pkg.version} - readme retrieved`
       );
 
       clearOldReadmes(pkg, cache.retrieved[pkg.name], options.dryRun);
