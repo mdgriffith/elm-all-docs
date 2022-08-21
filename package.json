@@ -8,7 +8,9 @@
   "license": "BSD-3-Clause-Clear",
   "scripts": {
     "build": "tsc",
-    "get": "node ./dist/index.js"
+    "get": "node ./dist/index.js get",
+    "check": "node ./dist/index.js check",
+    "purge": "node ./dist/index.js purge-skipped"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.6.2",
