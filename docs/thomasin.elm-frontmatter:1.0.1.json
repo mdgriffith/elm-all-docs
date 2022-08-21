@@ -1,0 +1,252 @@
+[
+    {
+        "name": "Content.Decode",
+        "comment": "\n\n\n# Declaration\n\n@docs DecoderResult, FrontmatterDecoder, frontmatter, frontmatterWithoutBody, use, throw, ignore\n\n\n# Attribute\n\n@docs Attribute, attribute\n\n\n# Basic decoders\n\n@docs Decoder, string, int, float, datetime, anonymousRecord, list, link\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "Attribute",
+                "comment": " A YAML field\n",
+                "args": [],
+                "type": "Content.Decode.Internal.Attribute"
+            },
+            {
+                "name": "Decoder",
+                "comment": " Decoders turn YAML data into Elm types and records\n",
+                "args": [
+                    "a"
+                ],
+                "type": "Content.Decode.Internal.Decoder a"
+            },
+            {
+                "name": "DecoderResult",
+                "comment": " The result of trying to find a decoder for a file\n",
+                "args": [],
+                "type": "Content.Decode.Internal.DeclarationResult"
+            },
+            {
+                "name": "FrontmatterDecoder",
+                "comment": " Declare a frontmatter decoder\n",
+                "args": [],
+                "type": "Content.Decode.Internal.Declaration"
+            }
+        ],
+        "values": [
+            {
+                "name": "anonymousRecord",
+                "comment": " Decode an anonymous record (We don't have typed records yet).\nYou have to create anonymous records with a list of `attribute`s.\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"title\" Content.Decode.string\n        , Content.Decode.attribute \"recordtest\"\n            (Content.Decode.anonymousRecord\n                [ Content.Decode.attribute \"field1\" Content.Decode.string\n                , Content.Decode.attribute \"field2\" Content.Decode.string\n                ]\n            )\n        ]\n\n",
+                "type": "List.List Content.Decode.Attribute -> Content.Decode.Decoder (List.List Content.Decode.DecodedAttribute)"
+            },
+            {
+                "name": "attribute",
+                "comment": " `attribute` is how you decode named YAML fields. They map\n1-1 to the generated Elm and can't be renamed. The fields\nare generated in the order that they appear in the list.\n\n    {- YAML:\n    title: \"Today's newspaper\"\n    description: \"A pleasant walk\"\n\n    ---\n\n    Tea\n    -}\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"title\" Content.Decode.string\n        , Content.Decode.attribute \"description\" Content.Decode.string\n        ]\n\n    {- =>\n    type alias Content =\n        { title : String\n        , description : String\n        , body : String\n        }\n\n    content : Content\n    content =\n        { title = \"Today's newspaper\"\n        , description = \"A pleasant walk\"\n        , body = \"Tea\"\n        }\n    -}\n\n",
+                "type": "String.String -> Content.Decode.Decoder a -> Content.Decode.Attribute"
+            },
+            {
+                "name": "datetime",
+                "comment": " Decode Iso8601 formatted date strings. `elm/time` must be installed for the output to compile.\n\nGiven a markdown file `index.md` containing\n\n```yaml\n---\ntitle: A list of people\ntomorrow: 2016-08-04T18:53:38.297Z\n---\n\nbody text\n```\n\nAnd a decoder\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"tomorrow\" Content.Decode.datetime\n        ]\n\nThis will generate the `Content/Index.elm` file\n\n    import Time\n\n    type alias Content =\n        { tomorrow : Time.Posix\n        , body : String\n        }\n\n    content : Content\n    content =\n        { tomorrow = Time.millisToPosix 1470336818297\n        , body = \"body text\"\n        }\n\n",
+                "type": "Content.Decode.Decoder Time.Posix"
+            },
+            {
+                "name": "float",
+                "comment": " Decode floats\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"title\" Content.Decode.string\n        , Content.Decode.attribute \"bankAccountDollars\" Content.Decode.float\n        ]\n\n",
+                "type": "Content.Decode.Decoder Basics.Float"
+            },
+            {
+                "name": "frontmatter",
+                "comment": " Decode a frontmatter file. This will include the file body as a `body` field in the generated record.\n\n\n    decoder : Content.Type.Path -> Content.Decode.DecoderResult\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.Index\" ->\n                Content.Decode.use <|\n                    Content.Decode.frontmatter\n                        [ Content.Decode.attribute \"title\" Content.Decode.string\n                        , Content.Decode.attribute \"description\" Content.Decode.string\n                        ]\n\n            _ ->\n                Content.Decode.throw\n\n    {- =>\n       type alias Content =\n           { title : String\n           , description : String\n           , body : String\n           }\n\n       content : Content\n       content =\n           { title = \"Today's newspaper\"\n           , description = \"A pleasant walk\"\n           , body = \"Main content\"\n           }\n    -}\n\n",
+                "type": "List.List Content.Decode.Attribute -> Content.Decode.FrontmatterDecoder"
+            },
+            {
+                "name": "frontmatterWithoutBody",
+                "comment": " Decode a frontmatter file. This will ignore the file body.\n\n\n    decoder : Content.Type.Path -> Content.Decode.DecoderResult\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.Index\" ->\n                Content.Decode.use <|\n                    Content.Decode.frontmatterWithoutBody\n                        [ Content.Decode.attribute \"title\" Content.Decode.string\n                        , Content.Decode.attribute \"description\" Content.Decode.string\n                        ]\n\n            _ ->\n                Content.Decode.throw\n\n    {- =>\n       type alias Content =\n           { title : String\n           , description : String\n           }\n\n       content : Content\n       content =\n           { title = \"Today's newspaper\"\n           , description = \"A pleasant walk\"\n           }\n    -}\n\n",
+                "type": "List.List Content.Decode.Attribute -> Content.Decode.FrontmatterDecoder"
+            },
+            {
+                "name": "ignore",
+                "comment": " If this is returned from the main `decoder` function it won't do anything.\nUseful when you want to allow markdown files to be created without having\na matching decoder yet.\n\n    decoder : Content.Type.Path -> Content.Decode.Declaration\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.Index\" ->\n                Content.Decode.use <|\n                    Content.Decode.frontmatterWithoutBody\n                        [ Content.Decode.attribute \"title\" Content.Decode.string\n                        , Content.Decode.attribute \"description\" Content.Decode.string\n                        ]\n\n            _ ->\n                Content.Decode.ignore\n\n",
+                "type": "Content.Decode.DecoderResult"
+            },
+            {
+                "name": "int",
+                "comment": " Decode ints\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"title\" Content.Decode.string\n        , Content.Decode.attribute \"daysTillFullMoon\" Content.Decode.int\n        ]\n\n",
+                "type": "Content.Decode.Decoder Basics.Int"
+            },
+            {
+                "name": "link",
+                "comment": " Links to another content record. Given a markdown file `index.md` containing\n\n```yaml\n---\ntitle: Index\nabout: about.md\nperson1: about/people/[person1].md\n---\n\nbody text\n```\n\nAnd a decoder\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"about\" Content.Decode.link\n        , Content.Decode.attribute \"person1\" Content.Decode.link\n        ]\n\nThis will generate the `Content/Index.elm` file\n\n    import Content.About.People\n\n    type alias Content =\n        { about : Content.About.Content\n        , person1 : Content.About.People.ListItem\n        , body : String\n        }\n\n    content : Content\n    content =\n        { about = Content.About.content\n        , person1 = Content.About.People.person1\n        , body = \"body text\"\n        }\n\n",
+                "type": "Content.Type.Path -> Content.Decode.Decoder ( Elm.Syntax.ModuleName.ModuleName, String.String )"
+            },
+            {
+                "name": "list",
+                "comment": " Decode a list of items. Given a markdown file `index.md` containing\n\n```yaml\n---\ntitle: A list of people\nstrings:\n    - string1\n    - string2\npeople:\n    - about/people/[person1].md\n    - about/people/[person2].md\n---\n\nbody text\n```\n\nAnd a decoder\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"strings\" (Content.Decode.list Content.Decode.string)\n        , Content.Decode.attribute \"people\" (Content.Decode.list Content.Decode.link)\n        ]\n\nThis will generate the `Content/Index.elm` file\n\n    type alias Content =\n        { strings : List String\n        , people : List Content.About.People.ListItem\n        , body : String\n        }\n\n    content : Content\n    content =\n        { strings = [ \"string1\", \"string2\" ]\n        , people = [ Content.About.People.person1, Content.About.People.person2 ]\n        , body = \"body text\"\n        }\n\n",
+                "type": "Content.Decode.Decoder a -> Content.Decode.Decoder (List.List a)"
+            },
+            {
+                "name": "string",
+                "comment": " Decode strings\n\n    Content.Decode.frontmatter\n        [ Content.Decode.attribute \"title\" Content.Decode.string\n        , Content.Decode.attribute \"description\" Content.Decode.string\n        ]\n\n",
+                "type": "Content.Decode.Decoder String.String"
+            },
+            {
+                "name": "throw",
+                "comment": " If this is returned from the main `decoder` function it will throw an error.\nUseful when you want to ensure that all markdown files are handled.\n\n    decoder : Content.Type.Path -> Content.Decode.DecoderResult\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.Index\" ->\n                Content.Decode.use <|\n                    Content.Decode.frontmatterWithoutBody\n                        [ Content.Decode.attribute \"title\" Content.Decode.string\n                        , Content.Decode.attribute \"description\" Content.Decode.string\n                        ]\n\n            _ ->\n                Content.Decode.throw\n\n",
+                "type": "Content.Decode.DecoderResult"
+            },
+            {
+                "name": "use",
+                "comment": " If this is returned with a `FrontmatterDecoder` from the main `decoder` function it will\napply the frontmatter decoder to the matched file.\n\n    decoder : Content.Type.Path -> Content.Decode.DecoderResult\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.Index\" ->\n                Content.Decode.use <|\n                    Content.Decode.frontmatterWithoutBody\n                        [ Content.Decode.attribute \"title\" Content.Decode.string\n                        , Content.Decode.attribute \"description\" Content.Decode.string\n                        ]\n\n            _ ->\n                Content.Decode.throw\n\n",
+                "type": "Content.Decode.FrontmatterDecoder -> Content.Decode.DecoderResult"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Content.Decode.Image",
+        "comment": "\n\n@docs CopyArgs, Manipulation, process, batchProcess, width\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "CopyArgs",
+                "comment": " Image processing configuration\n\n    imageCopyArgs : Content.Decode.Image.CopyArgs\n    imageCopyArgs =\n        { copyToDirectory = \"../static/image-gen/\"\n        , publicDirectory = \"/image-gen/\"\n        }\n\nwill copy images to the `../static/image-gen/` folder, relative to\nthe local `package.json`. Image URLs will be written with the public\ndirectory as the root i.e. `/image-gen/banner.jpg`\n\n",
+                "args": [],
+                "type": "{ copyToDirectory : String.String, publicDirectory : String.String }"
+            },
+            {
+                "name": "Manipulation",
+                "comment": " An image manipulation\n",
+                "args": [],
+                "type": "Content.Decode.Image.Internal.Manipulation"
+            }
+        ],
+        "values": [
+            {
+                "name": "batchProcess",
+                "comment": " Make multiple copies of one image.\n\n\n    imageCopyArgs : Content.Decode.Image.CopyArgs\n    imageCopyArgs =\n        { copyToDirectory = \"../static/image-gen/\"\n        , publicDirectory = \"/image-gen/\"\n        }\n\n    decoder : Content.Type.Path -> Content.Decode.Declaration\n    decoder typePath =\n        case typePath of\n            Content.Type.Multiple \"Content.About.People\" ->\n                Content.Decode.decodeWithoutBody\n                    [ Content.Decode.attribute \"name\" Content.Decode.string\n                    , Content.Decode.attribute \"position\" Content.Decode.string\n                    , Content.Decode.attribute \"thumbnail\"\n                        (Content.Decode.Image.batchProcess imageCopyArgs\n                            ( \"300\", [ Content.Decode.Image.width 300 ] )\n                            [ ( \"600\", [ Content.Decode.Image.width 600 ] )\n                            , ( \"1200\", [ Content.Decode.Image.width 1200 ] )\n                            ]\n                        )\n                    ]\n\n            _ ->\n                Content.Decode.ignore\n\n    {-\n       type alias ListItem =\n           { name : String\n           , position : String\n           , thumbnail : ( ( String, String ), List ( String, String ) )\n           }\n\n       person1 : ListItem\n       person1 =\n           { name = \"Person 1\", position = \"Astronaut\"\n           , thumbnail =\n               ( ( \"300\", \"/image-gen/about/people/[person1]/banner-300.jpeg\" )\n               , [ ( \"600\", \"/image-gen/about/people/[person1]/banner-600.jpeg\" )\n                 , ( \"1200\", \"/image-gen/about/people/[person1]/banner-1200.jpeg\" )\n                 ]\n               )\n           }\n    -}\n\n",
+                "type": "Content.Decode.Image.CopyArgs -> ( String.String, List.List Content.Decode.Image.Manipulation ) -> List.List ( String.String, List.List Content.Decode.Image.Manipulation ) -> Content.Decode.Decoder ( Content.Decode.Image.Internal.ActionDetails, List.List Content.Decode.Image.Internal.ActionDetails )"
+            },
+            {
+                "name": "process",
+                "comment": " Copy and modify an image\n\n\n    imageCopyArgs : Content.Decode.Image.CopyArgs\n    imageCopyArgs =\n        { copyToDirectory = \"../static/image-gen/\"\n        , publicDirectory = \"/image-gen/\"\n        }\n\n    decoder : Content.Type.Path -> Content.Decode.Declaration\n    decoder typePath =\n        case typePath of\n            Content.Type.Single \"Content.About\" ->\n                Content.Decode.decode\n                    [ Content.Decode.attribute \"title\" Content.Decode.string\n                    , Content.Decode.attribute \"banner\"\n                        (Content.Decode.Image.process imageCopyArgs [ Content.Decode.Image.width 1600 ])\n                    ]\n\n            _ ->\n                Content.Decode.ignore\n\n    {- =>\n       type alias Content =\n           { title : String\n           , banner : String\n           }\n\n\n       content : Content\n       content =\n           { title = \"About\"\n           , banner = \"/image-gen/banner.jpeg\"\n           }\n    -}\n\n",
+                "type": "Content.Decode.Image.CopyArgs -> List.List Content.Decode.Image.Internal.Manipulation -> Content.Decode.Decoder ( Content.Decode.Image.Internal.ActionDetails, List.List Content.Decode.Image.Internal.ActionDetails )"
+            },
+            {
+                "name": "width",
+                "comment": " Resize the generated image to a specified width.\nThe image will evenly scale.\n",
+                "type": "Basics.Int -> Content.Decode.Image.Manipulation"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Content.Decode.Syntax",
+        "comment": " These Syntax helpers are extensible wrappers around elm-syntax, made so you can build\ntype and function declarations in parallel.\n\n    syntax : Content.Decode.Syntax.Syntax ( ( Int, String ), List ( String, String ) )\n    syntax =\n        Content.Decode.Syntax.tuple2\n            ( Content.Decode.Syntax.tuple2 ( Content.Decode.Syntax.int, Content.Decode.Syntax.string )\n            , Content.Decode.Syntax.list\n                (Content.Decode.Syntax.tuple2 ( Content.Decode.Syntax.string Content.Decode.Syntax.string ))\n            )\n\n    Elm.Writer.writeExpression\n        (syntax.expression [ ( \"one\", \"two\" ), [ ( \"three\", \"four\" ) ] ]\n\n    Elm.Writer.writeTypeAnnotation syntax.typeAnnotation\n\n@docs Syntax, fromDecoder, string, datetime, int, float, bool, list, dict, tuple2, tuple3\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "Syntax",
+                "comment": " Syntax object\n",
+                "args": [
+                    "a"
+                ],
+                "type": "{ typeAnnotation : Elm.Syntax.TypeAnnotation.TypeAnnotation, imports : List.List Elm.Syntax.Import.Import, expression : a -> Elm.Syntax.Expression.Expression }"
+            }
+        ],
+        "values": [
+            {
+                "name": "bool",
+                "comment": " Bool\n",
+                "type": "Content.Decode.Syntax.Syntax Basics.Bool"
+            },
+            {
+                "name": "datetime",
+                "comment": " Datetime\n",
+                "type": "Content.Decode.Syntax.Syntax Time.Posix"
+            },
+            {
+                "name": "dict",
+                "comment": " Dict\n`dict int => Dict.Dict String Int`\n",
+                "type": "Content.Decode.Syntax.Syntax a -> Content.Decode.Syntax.Syntax (List.List ( String.String, a ))"
+            },
+            {
+                "name": "float",
+                "comment": " Float\n",
+                "type": "Content.Decode.Syntax.Syntax Basics.Float"
+            },
+            {
+                "name": "fromDecoder",
+                "comment": " Turn a decoder into a simpler Syntax object\n",
+                "type": "Content.Decode.Internal.Decoder a -> Content.Decode.Syntax.Syntax a"
+            },
+            {
+                "name": "int",
+                "comment": " Int\n",
+                "type": "Content.Decode.Syntax.Syntax Basics.Int"
+            },
+            {
+                "name": "list",
+                "comment": " List\n`list string => List String`\n",
+                "type": "Content.Decode.Syntax.Syntax a -> Content.Decode.Syntax.Syntax (List.List a)"
+            },
+            {
+                "name": "string",
+                "comment": " String\n",
+                "type": "Content.Decode.Syntax.Syntax String.String"
+            },
+            {
+                "name": "tuple2",
+                "comment": " Two element tuple\n`tuple2 ( string, int ) => ( String, Int )`\n",
+                "type": "( Content.Decode.Syntax.Syntax a, Content.Decode.Syntax.Syntax b ) -> Content.Decode.Syntax.Syntax ( a, b )"
+            },
+            {
+                "name": "tuple3",
+                "comment": " Three element tuple\n`tuple2 ( string, float, int ) => ( String, Float, Int )`\n",
+                "type": "( Content.Decode.Syntax.Syntax a, Content.Decode.Syntax.Syntax b, Content.Decode.Syntax.Syntax c ) -> Content.Decode.Syntax.Syntax ( a, b, c )"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Content.Type",
+        "comment": "\n\n# Declaration\n\n@docs Path, toTypeName, toModuleDir, toString\n\n",
+        "unions": [
+            {
+                "name": "Path",
+                "comment": " Path\n",
+                "args": [],
+                "cases": [
+                    [
+                        "Single",
+                        [
+                            "String.String"
+                        ]
+                    ],
+                    [
+                        "Multiple",
+                        [
+                            "String.String"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "aliases": [],
+        "values": [
+            {
+                "name": "toModuleDir",
+                "comment": "\n\nh\n",
+                "type": "Content.Type.Path -> List.List String.String"
+            },
+            {
+                "name": "toString",
+                "comment": "\n\nh\n",
+                "type": "Content.Type.Path -> String.String"
+            },
+            {
+                "name": "toTypeName",
+                "comment": "\n\nh\n",
+                "type": "Content.Type.Path -> String.String"
+            }
+        ],
+        "binops": []
+    }
+]
