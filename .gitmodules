@@ -1,0 +1,3 @@
+[submodule "elm-all-docs"]
+	path = elm-all-docs
+	url = git@github.com:kraklin/elm-all-docs.git

@@ -1,0 +1,645 @@
+[
+    {
+        "name": "Neat",
+        "comment": " Main module for elm-neat-layout.\n\n\n# Core\n\n@docs View\n@docs Boundary\n@docs NoGap\n@docs noGap\n\n\n# Render\n\n@docs render\n@docs Renderer\n@docs defaultRenderer\n@docs setBaseSizeInRem\n\n\n# Handle conditions\n\n@docs when\n@docs unless\n@docs withMaybe\n\n\n# Custom gaps\n\nYou can use custom gaps just by declaring new types and `IsGap` values for them.\n\n    import Neat exposing (IsGap)\n\n    type ButtonGroup\n        = ButtonGroup Never\n\n    buttonGroup : IsGap ButtonGroup\n    buttonGroup =\n        IsGap\n            { horizontal = 0.6\n            , vertical = 0.6\n            }\n\n@docs IsGap\n@docs customGap\n@docs Gap\n\n",
+        "unions": [
+            {
+                "name": "NoGap",
+                "comment": " A primitive type that represents that there is no Gap\n\nFor custom gaps, see [Custom gaps](#custom-gaps).\n\n",
+                "args": [],
+                "cases": []
+            }
+        ],
+        "aliases": [
+            {
+                "name": "Boundary",
+                "comment": " A bounded View without gap.\n\nConvert to/from View by `setGap`/`setBoundary`.\n\n",
+                "args": [
+                    "msg"
+                ],
+                "type": "Neat.Internal.Boundary msg"
+            },
+            {
+                "name": "Gap",
+                "comment": " ",
+                "args": [],
+                "type": "{ horizontal : Basics.Float, vertical : Basics.Float }"
+            },
+            {
+                "name": "IsGap",
+                "comment": " Information about your custom gaps.\n\n  - horizontal : horizontal gap relative to _base size_\n  - vertical : vertical gap relative to _base size_\n\ne.g., If the _base size_ is `2rem`, `IsGap { horizontal = 1.2, vertical = 2 }` becomes gap with `\"2.4rem\"` horizontally and `\"4rem\"` vertically.\n\n",
+                "args": [
+                    "p"
+                ],
+                "type": "Neat.Internal.IsGap p"
+            },
+            {
+                "name": "Renderer",
+                "comment": " Settings for rendering `View`.\n",
+                "args": [],
+                "type": "Neat.Internal.Renderer"
+            },
+            {
+                "name": "View",
+                "comment": " A gap-sensible `Html msg` alternative.\n",
+                "args": [
+                    "gap",
+                    "msg"
+                ],
+                "type": "Neat.Internal.View gap msg"
+            }
+        ],
+        "values": [
+            {
+                "name": "customGap",
+                "comment": " ",
+                "type": "Neat.Gap -> Neat.IsGap p"
+            },
+            {
+                "name": "defaultRenderer",
+                "comment": "\n\n  - base size: 1rem\n\n",
+                "type": "Neat.Renderer"
+            },
+            {
+                "name": "noGap",
+                "comment": " ",
+                "type": "Neat.IsGap Neat.NoGap"
+            },
+            {
+                "name": "render",
+                "comment": " Render the `View` into `Html` so that it spreads across the screen.\n",
+                "type": "Neat.Renderer -> Neat.Boundary msg -> Mixin.Html.Html msg"
+            },
+            {
+                "name": "setBaseSizeInRem",
+                "comment": " Set the base size in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).\n\n> Represents the font-size of the root element (typically <html>).\n\nAll gap sizes are determined relative to this value.\n\n",
+                "type": "Basics.Float -> Neat.Renderer -> Neat.Renderer"
+            },
+            {
+                "name": "unless",
+                "comment": " Apply a modifier unless a condition is met.\n",
+                "type": "Basics.Bool -> (a -> a) -> a -> a"
+            },
+            {
+                "name": "when",
+                "comment": " Apply a modifier only when a condition is met.\n",
+                "type": "Basics.Bool -> (a -> a) -> a -> a"
+            },
+            {
+                "name": "withMaybe",
+                "comment": " Apply a modifier only if the given value is `Just`.\n",
+                "type": "Maybe.Maybe a -> (a -> b -> b) -> b -> b"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Neat.Boundary",
+        "comment": " Module for building `Boundary`.\n\n\n# Core\n\n@docs Boundary\n@docs map\n\n\n# Primitive Constructors\n\n@docs textBlock\n@docs fromTexts\n@docs empty\n\n\n# Attributes\n\nFunctions to set arbitrary attributes.\nThe following styles are not reflected by the `style` attribute or CSS files.\n\n  - padding / margin\n      - Use functions for gaps.\n  - min-width / max-width / min-height / max-height / line-height\n      - Use functions for sizes.\n  - width / height\n      - Use min-\\* and max-\\*.\n  - white-space\n      - Determined by wrapping style\n  - display / position\n      - Determined automatically by its context\n  - z-index\n      - Enforced to be \"auto\"\n  - box-sizing\n      - Determined by each type of view.\n          - `scalableBlock` is \"content-box\"\n          - otherwise, \"border-box\"\n  - overflow\n      - Boundaries automatically handles overflow.\n  - position\n      - Use putLayer\n  - line-height\n      - Specify with `textBlock`\n\n@docs setMixin\n@docs setMixins\n@docs setAttribute\n@docs setAttributes\n@docs setClass\n@docs setId\n\n\n# WAI-ARIA\n\n@docs setRole\n@docs setAria\n@docs setBoolAria\n\n\n# Sizes\n\nYou can only use a limited kind of units.\nThis may seem inconvenient, but it prevents you to build unmaintainable broken views.\n\n\n## minimum width\n\nThe initial _minimum width_ is zero without enabling child overflow.\n\n@docs setMinWidthInBs\n@docs setMinWidthInEm\n@docs setMinWidthInRem\n\n\n## minimum height\n\nThe initial _minimum height_ is zero without enabling child overflow.\n\n@docs setMinHeightInBs\n@docs setMinHeightInEm\n@docs setMinHeightInRem\n\n\n## maximum width\n\nThe initial value for maximum width is _fit_, which shrinks as much as its children do not overhang it.\n\n@docs setMaxWidthInBs\n@docs setMaxWidthInEm\n@docs setMaxWidthInRem\n\n\n## maximum height\n\nThe initial value for maximum height is _fit_, which shrinks as much as its children do not overhang it.\n\n@docs setMaxHeightInBs\n@docs setMaxHeightInEm\n@docs setMaxHeightInRem\n\n\n# Scroll\n\n@docs enableVerticalScroll\n@docs enableHorizontalScroll\n\n\n# Overlay\n\n@docs putLayer\n@docs Layer\n@docs defaultLayer\n@docs Layered\n@docs mapLayered\n@docs toLayered\n\n\n# Handle Conditions\n\n@docs none\n@docs when\n@docs unless\n@docs withMaybe\n\n\n# Convert to `View`\n\n@docs setGap\n\n\n# Lower level functions for HTML\n\n@docs setNodeName\n@docs html\n@docs htmlNode\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "Boundary",
+                "comment": " A bounded View without gap.\n\nConvert to/from View by `setGap`/`setBoundary`.\n\n",
+                "args": [
+                    "msg"
+                ],
+                "type": "Neat.Internal.Boundary msg"
+            },
+            {
+                "name": "Layer",
+                "comment": " Set the position of each edge of the overlay layer as a percentage of the base view.\n\nThe `priority` field specifies how much the element is superimposed on the front side in preference to other elements. If given `Nothing`, it is set equivalent priority comparing to other elements.\n\n",
+                "args": [],
+                "type": "{ top : Basics.Float, bottom : Basics.Float, left : Basics.Float, right : Basics.Float, priority : Maybe.Maybe Basics.Int }"
+            },
+            {
+                "name": "Layered",
+                "comment": " ",
+                "args": [
+                    "msg"
+                ],
+                "type": "Neat.Internal.Layered msg"
+            }
+        ],
+        "values": [
+            {
+                "name": "defaultLayer",
+                "comment": "\n\n    defaultLayer\n    --> { top = 0\n    --> , bottom = 0\n    --> , left = 0\n    --> , right = 0\n    --> , priority = Nothing\n    --> }\n\n",
+                "type": "Neat.Boundary.Layer"
+            },
+            {
+                "name": "empty",
+                "comment": " An empty block.\n",
+                "type": "Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "enableHorizontalScroll",
+                "comment": " ",
+                "type": "Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "enableVerticalScroll",
+                "comment": " ",
+                "type": "Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "fromTexts",
+                "comment": " Build view with text from `Text`s.\n\nUnlike a `Neat.row` of `Neat.textBlock`s, the `fromTexts` generates a single coherent sentence.\n\nFor example, the `View` built by the following code will be broken as follows.\n\n    Neat.row\n        [ Neat.textBlock \"foo bar baz\"\n        , Neat.textBlock \"a b c d e f\"\n        ]\n\n    | foo bar | a b c d |\n    | baz     | e f     |\n\nIn contrast, the `View` built by the following code will be broken as follows.\n\n    import Neat.Text as Text\n\n    Neat.fromTexts <| Text.batch\n        [ Text.text \"foo bar baz\"\n        , Text.text \"a b c d e f\"\n        ]\n\n| foo bar baz a b c |\n| d e f |\n\nThe line spacing width when the text is broken is the same as the Gap height applied by the `setGap` function.\n\n",
+                "type": "List.List (Neat.Text.Text msg) -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "html",
+                "comment": " Build HTML tag. When you need to build a HTML tag with its children, `html` will help you.\n\n    animalSelect : Maybe Animal -> Boundary msg\n    animalSelect animal =\n        Boundary.html \"select\"\n            [ animalOption Nothing animal\n            , animalOption (Just Goat) animal\n            , animalOption (Just Dog) animal\n            , animalOption (Just Cat) animal\n            ]\n            |> Boundary.setMixin\n                (Mixin.Events.onChange ChangeAnimal)\n\n",
+                "type": "String.String -> List.List ( String.String, Neat.Boundary.Boundary msg ) -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "htmlNode",
+                "comment": " A special `Boundary` which only has text content. For example, you can use `htmlNode` to build `option` tag.\n\n    animalOption :\n        Maybe Animal\n        -> Maybe Animal\n        -> ( String, Boundary msg )\n    animalOption animal selected =\n        let\n            key =\n                animal\n                    |> Maybe.map Animal.toValue\n                    |> Maybe.withDefault \"default\"\n\n            disabled =\n                animal == Nothing\n\n            selected =\n                animal == selected\n\n            value =\n                animal\n                    |> Maybe.map Animal.toValue\n                    |> Maybe.withDefault \"\"\n\n            label =\n                animal\n                    |> Maybe.map Animal.toLabel\n                    |> Maybe.withDefault \"-- Select one --\"\n        in\n        ( key\n        , Boundary.htmlNode \"option\" label\n            |> Boundary.setAttributes\n                [ Attributes.disabled disabled\n                , Attributes.selected selected\n                , Attributes.value value\n                ]\n        )\n\n",
+                "type": "String.String -> String.String -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "map",
+                "comment": " ",
+                "type": "(a -> b) -> Neat.Boundary.Boundary a -> Neat.Boundary.Boundary b"
+            },
+            {
+                "name": "mapLayered",
+                "comment": " ",
+                "type": "(a -> b) -> Neat.Boundary.Boundary (Neat.Boundary.Layered a) -> Neat.Boundary.Boundary (Neat.Boundary.Layered b)"
+            },
+            {
+                "name": "none",
+                "comment": " Generates no HTML nodes.\nThis is useful for handling elements which only appears under certain conditions.\n\n    when p v =\n        if p then\n            v\n\n        else\n            none\n\n",
+                "type": "Neat.Boundary.Boundary a"
+            },
+            {
+                "name": "putLayer",
+                "comment": " Put overlay layer on the parent view.\n",
+                "type": "String.String -> ( Neat.Boundary.Layer, Neat.Boundary.Boundary (Neat.Boundary.Layered msg) ) -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setAria",
+                "comment": " Set \"aria-\\*\" value for WAI-ARIA.\n\ne.g., `setAria \"required\" \"true\"` stands for \"aria-required\" is \"true\".\n\n",
+                "type": "String.String -> String.String -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setAttribute",
+                "comment": " Append `Attribute` on boundaries.\n",
+                "type": "Html.Attribute msg -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setAttributes",
+                "comment": " Same as `setAttribute` but takes a list of `Attribute`s.\n",
+                "type": "List.List (Html.Attribute msg) -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setBoolAria",
+                "comment": " Set boolean \"aria-\\*\" value for WAI-ARIA.\n\ni.e.,\n\n  - `setBoolAria name True` is equal to `setAria name \"true\"`\n  - `setBoolAria name False` is equal to `setAria name \"false\"`\n\n",
+                "type": "String.String -> Basics.Bool -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setClass",
+                "comment": " Append `class` attribute.\n",
+                "type": "String.String -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setGap",
+                "comment": " Gap around a view.\n",
+                "type": "Neat.Internal.IsGap gap -> Neat.Boundary.Boundary msg -> Neat.Internal.View gap msg"
+            },
+            {
+                "name": "setId",
+                "comment": " Append `id` attribute.\n",
+                "type": "String.String -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxHeightInBs",
+                "comment": " Set the maximum height as a percentage of the _base size_.\ne.g., `setMaxHeightInBs 100` set the _maximum height_ the same length as the _base size_.\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxHeightInEm",
+                "comment": " Set the maximum height in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).\n\n> Represents the calculated font-size of the element.\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxHeightInRem",
+                "comment": " Set the maximum height in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).\n\n> Represents the font-size of the root element (typically <html>).\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxWidthInBs",
+                "comment": " Set the maximum width as a percentage of the _base size_.\ne.g., `setMaxWidthInBs 100` set the _maximum width_ the same length as the _base size_.\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxWidthInEm",
+                "comment": " Set the maximum width in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).\n\n> Represents the calculated font-size of the element.\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMaxWidthInRem",
+                "comment": " Set the maximum width in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).\n\n> Represents the font-size of the root element (typically <html>).\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinHeightInBs",
+                "comment": " Set the minimum height as a percentage of the _base size_.\ne.g., `setMinHeightInBs 100` set the _minimum height_ the same length as the _base size_.\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinHeightInEm",
+                "comment": " Set the minimum height in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).\n\n> Represents the calculated font-size of the element.\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinHeightInRem",
+                "comment": " Set the minimum height in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).\n\n> Represents the font-size of the root element (typically <html>).\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinWidthInBs",
+                "comment": " Set the minimum width as a percentage of the _base size_.\ne.g., `setMinWidthInBs 100` set the _minimum width_ the same length as the _base size_.\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinWidthInEm",
+                "comment": " Set the minimum width in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).\n\n> Represents the calculated font-size of the element.\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMinWidthInRem",
+                "comment": " Set the minimum width in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).\n\n> Represents the font-size of the root element (typically <html>).\n\n",
+                "type": "Basics.Float -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMixin",
+                "comment": " Append `Mixin` on boundaries.\n",
+                "type": "Mixin.Mixin msg -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setMixins",
+                "comment": " Same as `setMixin` but takes a list of `Mixin`s.\n",
+                "type": "List.List (Mixin.Mixin msg) -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setNodeName",
+                "comment": " Set HTML node name on `Boundary`.\n",
+                "type": "String.String -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "setRole",
+                "comment": " Set \"role\" value for WAI-ARIA.\n",
+                "type": "String.String -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "textBlock",
+                "comment": " Generates a view that displays a text.\n\nIt is an alias for `\\str -> fromTexts option [ Neat.Text.fromString str ]`\nNote that `textBlock \"\"` is equivalent to `empty`.\n\n",
+                "type": "String.String -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "toLayered",
+                "comment": " Convert `Boundary` for `putLayer`. The `Boundary (Layered msg)` ignores pointer events; this feature is especially helpfull for realizing popups with clickable background.\n",
+                "type": "Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary (Neat.Boundary.Layered msg)"
+            },
+            {
+                "name": "unless",
+                "comment": " Insert a view unless a condition is met.\n",
+                "type": "Basics.Bool -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "when",
+                "comment": " Insert a view only when a condition is met.\n",
+                "type": "Basics.Bool -> Neat.Boundary.Boundary msg -> Neat.Boundary.Boundary msg"
+            },
+            {
+                "name": "withMaybe",
+                "comment": " Insert a view only if the given value is `Just`.\n",
+                "type": "Maybe.Maybe a -> (a -> Neat.Boundary.Boundary msg) -> Neat.Boundary.Boundary msg"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Neat.Text",
+        "comment": " Module for inline texts.\nThis module is for creating special texts. e.g., text that has links only to parts of it.\n\n\n# Core\n\n@docs Text\n@docs map\n\n\n# Primitive constructors\n\n@docs fromString\n\n\n# Attributes\n\n@docs setMixin\n@docs setMixins\n@docs setAttribute\n@docs setAttributes\n@docs setClass\n@docs setId\n\n\n# WAI-ARIA\n\n@docs setRole\n@docs setAria\n@docs setBoolAria\n\n\n# Handle conditions\n\n@docs none\n@docs when\n@docs unless\n@docs withMaybe\n\n\n# Lower level functions for HTML\n\n@docs setNodeName\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "Text",
+                "comment": " Representing a text.\n",
+                "args": [
+                    "msg"
+                ],
+                "type": "Neat.Internal.Text msg"
+            }
+        ],
+        "values": [
+            {
+                "name": "fromString",
+                "comment": " Generate a `Text` with given text.\n",
+                "type": "String.String -> Neat.Text.Text msg"
+            },
+            {
+                "name": "map",
+                "comment": " ",
+                "type": "(a -> b) -> Neat.Text.Text a -> Neat.Text.Text b"
+            },
+            {
+                "name": "none",
+                "comment": " Generate Nothing.\nIt can be used to realize `Text`s only displayed under certain conditions, as shown below.\nIn most cases, a function such as `when` will suffice, though.\n\n    fromTexts\n        [ case mtext of\n            Just t ->\n                text t\n\n            Nothing ->\n                none\n        ]\n\n",
+                "type": "Neat.Text.Text msg"
+            },
+            {
+                "name": "setAria",
+                "comment": " Set \"aria-\\*\" value for WAI-ARIA.\n\ne.g., `setAria \"required\" \"true\"` stands for \"aria-required\" is \"true\".\n\n",
+                "type": "String.String -> String.String -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setAttribute",
+                "comment": " ",
+                "type": "Html.Attribute msg -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setAttributes",
+                "comment": " ",
+                "type": "List.List (Html.Attribute msg) -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setBoolAria",
+                "comment": " Set boolean \"aria-\\*\" value for WAI-ARIA.\n\ni.e.,\n\n  - `setBoolAria name True` is equal to `setAria name \"true\"`\n  - `setBoolAria name False` is equal to `setAria name \"false\"`\n\n",
+                "type": "String.String -> Basics.Bool -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setClass",
+                "comment": " Append `class` attribute.\n",
+                "type": "String.String -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setId",
+                "comment": " Append `id` attribute.\n",
+                "type": "String.String -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setMixin",
+                "comment": " ",
+                "type": "Mixin.Mixin msg -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setMixins",
+                "comment": " ",
+                "type": "List.List (Mixin.Mixin msg) -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setNodeName",
+                "comment": " ",
+                "type": "String.String -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "setRole",
+                "comment": " Set \"role\" value for WAI-ARIA.\n",
+                "type": "String.String -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "unless",
+                "comment": " ",
+                "type": "Basics.Bool -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "when",
+                "comment": " ",
+                "type": "Basics.Bool -> Neat.Text.Text msg -> Neat.Text.Text msg"
+            },
+            {
+                "name": "withMaybe",
+                "comment": " ",
+                "type": "Maybe.Maybe a -> (a -> Neat.Text.Text msg) -> Neat.Text.Text msg"
+            }
+        ],
+        "binops": []
+    },
+    {
+        "name": "Neat.View",
+        "comment": " Module for building `View`.\n\n\n# Core\n\n@docs View\n@docs map\n\n\n# WAI-ARIA\n\n@docs setRole\n@docs setAria\n@docs setBoolAria\n\n\n# Row\n\n@docs row\n\n\n## Config\n\n@docs Row\n@docs defaultRow\n@docs enableWrap\n@docs RowItem\n@docs alignCenter\n@docs alignRight\n\n\n## Item\n\nEach function has the `String` argument, which helps make the DOM modifications more efficient. It must be unique among items in the same row.\n\n@docs rowItem\n@docs topItem\n@docs middleItem\n@docs bottomItem\n@docs grownRowItem\n@docs grownTopItem\n@docs grownMiddleItem\n@docs grownBottomItem\n\n\n# Column\n\n@docs column\n\n\n## Config\n\n@docs Column\n@docs defaultColumn\n@docs ColumnItem\n@docs alignMiddle\n@docs alignBottom\n\n\n## Item\n\nEach function has the `String` argument, which helps make the DOM modifications more efficient. It must be unique among items in the same row.\n\n@docs columnItem\n@docs leftItem\n@docs centerItem\n@docs rightItem\n@docs grownColumnItem\n@docs grownLeftItem\n@docs grownCenterItem\n@docs grownRightItem\n\n\n# Handle Conditions\n\n@docs none\n@docs when\n@docs unless\n@docs withMaybe\n\n\n# Convert to `Boundary`\n\n@docs setBoundary\n\n\n# Lower level functions for HTML\n\n@docs setNodeName\n\n",
+        "unions": [],
+        "aliases": [
+            {
+                "name": "Column",
+                "comment": " ",
+                "args": [],
+                "type": "Neat.Internal.Column"
+            },
+            {
+                "name": "ColumnItem",
+                "comment": " ",
+                "args": [
+                    "gap",
+                    "msg"
+                ],
+                "type": "Neat.Internal.ColumnItem gap msg"
+            },
+            {
+                "name": "Row",
+                "comment": " ",
+                "args": [],
+                "type": "Neat.Internal.Row"
+            },
+            {
+                "name": "RowItem",
+                "comment": " ",
+                "args": [
+                    "gap",
+                    "msg"
+                ],
+                "type": "Neat.Internal.RowItem gap msg"
+            },
+            {
+                "name": "View",
+                "comment": " A gap-sensible `Html msg` alternative.\n",
+                "args": [
+                    "gap",
+                    "msg"
+                ],
+                "type": "Neat.Internal.View gap msg"
+            }
+        ],
+        "values": [
+            {
+                "name": "alignBottom",
+                "comment": " ",
+                "type": "Neat.View.Column -> Neat.View.Column"
+            },
+            {
+                "name": "alignCenter",
+                "comment": " ",
+                "type": "Neat.View.Row -> Neat.View.Row"
+            },
+            {
+                "name": "alignMiddle",
+                "comment": " ",
+                "type": "Neat.View.Column -> Neat.View.Column"
+            },
+            {
+                "name": "alignRight",
+                "comment": " ",
+                "type": "Neat.View.Row -> Neat.View.Row"
+            },
+            {
+                "name": "bottomItem",
+                "comment": " Bottom-aligned item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "centerItem",
+                "comment": " Horizontally centered item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "column",
+                "comment": " Align children vertically.\n",
+                "type": "Neat.View.Column -> List.List (Neat.View.ColumnItem gap msg) -> Neat.View.View gap msg"
+            },
+            {
+                "name": "columnItem",
+                "comment": " Column item with stretched width.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "defaultColumn",
+                "comment": " Default setting for columns.\n\n  - vertical alignment: top\n\n",
+                "type": "Neat.View.Column"
+            },
+            {
+                "name": "defaultRow",
+                "comment": " Default setting for rows.\n\n  - horizontal alignment: left\n  - wrapping: disabled\n\n",
+                "type": "Neat.View.Row"
+            },
+            {
+                "name": "enableWrap",
+                "comment": " ",
+                "type": "Neat.View.Row -> Neat.View.Row"
+            },
+            {
+                "name": "grownBottomItem",
+                "comment": " Bottom-aligned item which grows its width as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "grownCenterItem",
+                "comment": " Horizontally centered item which grows its height as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "grownColumnItem",
+                "comment": " Column item with stretched width and height.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "grownLeftItem",
+                "comment": " Left-aligned item which grows its height as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "grownMiddleItem",
+                "comment": " Vertically centered item which grows its width as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "grownRightItem",
+                "comment": " Right-aligned item which grows its height as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "grownRowItem",
+                "comment": " Row item with stretched height and width.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "grownTopItem",
+                "comment": " Top-aligned item which grows its width as much as possible.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "leftItem",
+                "comment": " Left-aligned item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "map",
+                "comment": " ",
+                "type": "(a -> b) -> Neat.View.View gap a -> Neat.View.View gap b"
+            },
+            {
+                "name": "middleItem",
+                "comment": " Vertically centered item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "none",
+                "comment": " Generates no HTML nodes.\nThis is useful for handling elements which only appears under certain conditions.\n\n    when p v =\n        if p then\n            v\n\n        else\n            none\n\n",
+                "type": "Neat.View.View g a"
+            },
+            {
+                "name": "rightItem",
+                "comment": " Right-aligned item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.ColumnItem gap msg"
+            },
+            {
+                "name": "row",
+                "comment": " Align children horizontally.\n",
+                "type": "Neat.View.Row -> List.List (Neat.View.RowItem gap msg) -> Neat.View.View gap msg"
+            },
+            {
+                "name": "rowItem",
+                "comment": " Row item with stretched height.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "setAria",
+                "comment": " Set \"aria-\\*\" value for WAI-ARIA.\n\ne.g., `setAria \"required\" \"true\"` stands for \"aria-required\" is \"true\".\n\n",
+                "type": "String.String -> String.String -> Neat.View.View g msg -> Neat.View.View g msg"
+            },
+            {
+                "name": "setBoolAria",
+                "comment": " Set boolean \"aria-\\*\" value for WAI-ARIA.\n\ni.e.,\n\n  - `setBoolAria name True` is equal to `setAria name \"true\"`\n  - `setBoolAria name False` is equal to `setAria name \"false\"`\n\n",
+                "type": "String.String -> Basics.Bool -> Neat.View.View g msg -> Neat.View.View g msg"
+            },
+            {
+                "name": "setBoundary",
+                "comment": " Wrap a view with boundary without gap.\nThis is the only way to reset view gaps.\n",
+                "type": "Neat.View.View gap msg -> Neat.Internal.Boundary msg"
+            },
+            {
+                "name": "setNodeName",
+                "comment": " ",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.View gap msg"
+            },
+            {
+                "name": "setRole",
+                "comment": " Set \"role\" value for WAI-ARIA.\n",
+                "type": "String.String -> Neat.View.View g msg -> Neat.View.View g msg"
+            },
+            {
+                "name": "topItem",
+                "comment": " Top-aligned item.\n",
+                "type": "String.String -> Neat.View.View gap msg -> Neat.View.RowItem gap msg"
+            },
+            {
+                "name": "unless",
+                "comment": " Insert a view unless a condition is met.\n",
+                "type": "Basics.Bool -> Neat.View.View gap msg -> Neat.View.View gap msg"
+            },
+            {
+                "name": "when",
+                "comment": " Insert a view only when a condition is met.\n",
+                "type": "Basics.Bool -> Neat.View.View gap msg -> Neat.View.View gap msg"
+            },
+            {
+                "name": "withMaybe",
+                "comment": " Insert a view only if the given value is `Just`.\n",
+                "type": "Maybe.Maybe a -> (a -> Neat.View.View gap msg) -> Neat.View.View gap msg"
+            }
+        ],
+        "binops": []
+    }
+]
